@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/domain.dart';
+import '../../../uikit/uikit.dart';
 import '../bloc/chat_bloc.dart';
 import '../widgets/widgets.dart';
 
@@ -45,11 +46,13 @@ class _ChatPageState extends State<ChatPage> {
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
       });
     }
   }
@@ -57,7 +60,10 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Чат')),
+      appBar: AppBar(
+        title: const Text('Чат'),
+        actions: const [ThemeButton()],
+      ),
       body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
           if (state is ChatReady) {
@@ -73,7 +79,30 @@ class _ChatPageState extends State<ChatPage> {
                 children: [
                   Expanded(
                     child: messages.isEmpty
-                        ? const Center(child: Text('Нет сообщений'))
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.message_outlined,
+                                  size: 64,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Напишите первое сообщение',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
                         : ListView.builder(
                             controller: _scrollController,
                             padding: const EdgeInsets.symmetric(
@@ -94,8 +123,7 @@ class _ChatPageState extends State<ChatPage> {
                             },
                           ),
                   ),
-                  if (isTyping)
-                    const TypingIndicator(),
+                  if (isTyping) const TypingIndicator(),
                   ChatInput(
                     controller: _textController,
                     onSend: _onSend,
@@ -103,7 +131,23 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ],
               ),
-            ChatFailure(:final message) => Center(child: Text(message)),
+            ChatFailure(:final message) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(message, textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
+              ),
           };
         },
       ),

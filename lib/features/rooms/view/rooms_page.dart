@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../data/data.dart';
 import '../../../domain/domain.dart';
+import '../../../uikit/uikit.dart';
 import '../../users/users.dart';
 import '../bloc/rooms_bloc.dart';
 import '../widgets/widgets.dart';
@@ -16,7 +17,10 @@ class RoomsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Диалоги — ${currentUser.name}')),
+      appBar: AppBar(
+        title: Text(currentUser.name),
+        actions: const [ThemeButton()],
+      ),
       body: BlocBuilder<RoomsBloc, RoomsState>(
         builder: (context, state) {
           return switch (state) {
@@ -24,7 +28,7 @@ class RoomsPage extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
             RoomsLoaded(:final rooms) => rooms.isEmpty
-                ? const Center(child: Text('Нет диалогов'))
+                ? _buildEmpty(context)
                 : ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: rooms.length,
@@ -49,18 +53,28 @@ class RoomsPage extends StatelessWidget {
                     },
                   ),
             RoomsError(:final message) => Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(message),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => context
-                          .read<RoomsBloc>()
-                          .add(RoomsLoadRequested(userId: currentUser.id)),
-                      child: const Text('Повторить'),
-                    ),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(message, textAlign: TextAlign.center),
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: () => context
+                            .read<RoomsBloc>()
+                            .add(RoomsLoadRequested(userId: currentUser.id)),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Повторить'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           };
@@ -73,6 +87,37 @@ class RoomsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildEmpty(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Нет диалогов',
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Начните новый чат',
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showNewChatDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -80,43 +125,71 @@ class RoomsPage extends StatelessWidget {
         create: (_) => UsersBloc(
           repository: context.read<ChatRepository>(),
         )..add(const UsersLoadRequested()),
-        child: BlocBuilder<UsersBloc, UsersState>(
-          builder: (blocContext, state) {
-            return switch (state) {
-              UsersInitial() || UsersLoading() => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              UsersLoaded(:final users) => ListView.builder(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: users.length,
-                  itemBuilder: (_, index) {
-                    final user = users[index];
-                    if (user.id == currentUser.id) {
-                      return const SizedBox.shrink();
-                    }
-                    return ListTile(
-                      leading: CircleAvatar(
-                        child: Text(user.name[0].toUpperCase()),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Выберите собеседника',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+            Flexible(
+              child: BlocBuilder<UsersBloc, UsersState>(
+                builder: (blocContext, state) {
+                  return switch (state) {
+                    UsersInitial() || UsersLoading() => const SizedBox(
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
                       ),
-                      title: Text(user.name),
-                      onTap: () {
-                        Navigator.of(sheetContext).pop();
-                        context.read<RoomsBloc>().add(RoomCreateRequested(
-                              currentUserId: currentUser.id,
-                              targetUserId: user.id,
-                            ));
-                      },
-                    );
-                  },
-                ),
-              UsersError() => const SizedBox(
-                  height: 200,
-                  child: Center(child: Text('Ошибка загрузки')),
-                ),
-            };
-          },
+                    UsersLoaded(:final users) => ListView.builder(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: users.length,
+                        itemBuilder: (_, index) {
+                          final user = users[index];
+                          if (user.id == currentUser.id) {
+                            return const SizedBox.shrink();
+                          }
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              foregroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              child: Text(
+                                user.name[0].toUpperCase(),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            title: Text(user.name),
+                            onTap: () {
+                              Navigator.of(sheetContext).pop();
+                              context
+                                  .read<RoomsBloc>()
+                                  .add(RoomCreateRequested(
+                                    currentUserId: currentUser.id,
+                                    targetUserId: user.id,
+                                  ));
+                            },
+                          );
+                        },
+                      ),
+                    UsersError() => const SizedBox(
+                        height: 200,
+                        child: Center(child: Text('Ошибка загрузки')),
+                      ),
+                  };
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );

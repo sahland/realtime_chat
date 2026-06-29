@@ -14,15 +14,15 @@ class ChatInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: theme.colorScheme.surface,
           border: Border(
-            top: BorderSide(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
+            top: BorderSide(color: theme.colorScheme.outlineVariant),
           ),
         ),
         child: Row(
@@ -35,20 +35,13 @@ class ChatInput extends StatelessWidget {
                 textInputAction: TextInputAction.send,
                 decoration: const InputDecoration(
                   hintText: 'Сообщение...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(24)),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
             IconButton.filled(
               onPressed: onSend,
-              icon: const Icon(Icons.send),
+              icon: const Icon(Icons.send_rounded),
             ),
           ],
         ),

@@ -14,20 +14,37 @@ class RoomListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          child: Text(companionId.substring(0, 2).toUpperCase()),
+          backgroundColor: theme.colorScheme.primaryContainer,
+          foregroundColor: theme.colorScheme.primary,
+          child: Text(
+            companionId.substring(0, 2).toUpperCase(),
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
-        title: Text(companionId),
+        title: Text(
+          companionId,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
         subtitle: lastMessageText != null
             ? Text(
                 lastMessageText!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
               )
             : null,
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
         onTap: onTap,
       ),
     );

@@ -12,13 +12,27 @@ class UserListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
       child: ListTile(
         leading: CircleAvatar(
-          child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+          backgroundColor: theme.colorScheme.primaryContainer,
+          foregroundColor: theme.colorScheme.primary,
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : '?',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
-        title: Text(name),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        title: Text(
+          name,
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
         onTap: onTap,
       ),
     );

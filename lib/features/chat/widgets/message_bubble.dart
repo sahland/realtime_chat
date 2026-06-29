@@ -19,6 +19,12 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final bubbleColor = isMine
+        ? theme.colorScheme.primary
+        : theme.colorScheme.surfaceContainerHighest;
+    final textColor = isMine
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -26,30 +32,22 @@ class MessageBubble extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isMine
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceContainerHighest,
+          color: bubbleColor,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMine ? 16 : 4),
-            bottomRight: Radius.circular(isMine ? 4 : 16),
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMine ? 18 : 4),
+            bottomRight: Radius.circular(isMine ? 4 : 18),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              text,
-              style: TextStyle(
-                color: isMine
-                    ? theme.colorScheme.onPrimary
-                    : theme.colorScheme.onSurface,
-              ),
-            ),
+            Text(text, style: TextStyle(color: textColor, fontSize: 15)),
             if (status == MessageStatus.sending)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -58,9 +56,7 @@ class MessageBubble extends StatelessWidget {
                   height: 12,
                   child: CircularProgressIndicator(
                     strokeWidth: 1.5,
-                    color: isMine
-                        ? theme.colorScheme.onPrimary.withValues(alpha: 0.7)
-                        : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                    color: textColor.withValues(alpha: 0.5),
                   ),
                 ),
               ),
