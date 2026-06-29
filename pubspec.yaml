@@ -14,7 +14,7 @@ dependencies:
 
   # Networking
   dio: ^5.8.0+1
-  retrofit: ^4.4.2
+  retrofit: ^4.4.1
   web_socket_channel: ^3.0.3
 
   # State management
@@ -39,7 +39,7 @@ dev_dependencies:
   # Code generation
   build_runner: ^2.4.15
   json_serializable: ^6.9.5
-  retrofit_generator: ^9.1.10
+  retrofit_generator: ^10.0.0
 
 flutter:
   uses-material-design: true
