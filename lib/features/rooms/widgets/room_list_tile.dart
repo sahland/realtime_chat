@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../uikit/uikit.dart';
+
 class RoomListTile extends StatelessWidget {
-  final String companionId;
+  final String name;
   final String? lastMessageText;
+  final String? lastMessageTime;
   final VoidCallback onTap;
 
   const RoomListTile({
     super.key,
-    required this.companionId,
+    required this.name,
     this.lastMessageText,
+    this.lastMessageTime,
     required this.onTap,
   });
 
@@ -16,36 +20,82 @@ class RoomListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.primaryContainer,
-          foregroundColor: theme.colorScheme.primary,
-          child: Text(
-            companionId.substring(0, 2).toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.l,
+          vertical: AppSpacing.m,
         ),
-        title: Text(
-          companionId,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: AppAvatarRadius.l,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              foregroundColor: theme.colorScheme.primary,
+              child: Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: AppFontSize.headline,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.l),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: AppFontSize.title,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (lastMessageTime != null)
+                        Text(
+                          lastMessageTime!,
+                          style: TextStyle(
+                            fontSize: AppFontSize.body2,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    lastMessageText ?? 'Нет сообщений',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: AppFontSize.body,
+                      color: lastMessageText != null
+                          ? theme.colorScheme.onSurfaceVariant
+                          : theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                      fontStyle: lastMessageText != null
+                          ? FontStyle.normal
+                          : FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.s),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: AppIconSize.l,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
+          ],
         ),
-        subtitle: lastMessageText != null
-            ? Text(
-                lastMessageText!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-              )
-            : null,
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-        onTap: onTap,
       ),
     );
   }

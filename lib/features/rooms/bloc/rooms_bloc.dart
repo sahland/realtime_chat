@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/data.dart';
+import '../../../domain/domain.dart';
 import 'rooms_event.dart';
 import 'rooms_state.dart';
 
@@ -23,8 +24,17 @@ class RoomsBloc extends Bloc<RoomsEvent, RoomsState> {
   ) async {
     emit(const RoomsLoading());
     try {
-      final rooms = await _repository.getRooms(event.userId);
-      emit(RoomsLoaded(rooms: rooms));
+      final results = await Future.wait([
+        _repository.getRooms(event.userId),
+        _repository.getUsers(),
+      ]);
+
+      final rooms = results[0] as List<RoomModel>;
+      final users = results[1] as List<UserModel>;
+
+      final usersMap = {for (final u in users) u.id: u};
+
+      emit(RoomsLoaded(rooms: rooms, usersMap: usersMap));
     } catch (e) {
       emit(RoomsError(message: e.toString()));
     }

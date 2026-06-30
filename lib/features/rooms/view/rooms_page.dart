@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../core/core.dart';
 import '../../../data/data.dart';
 import '../../../domain/domain.dart';
 import '../../../uikit/uikit.dart';
@@ -16,9 +16,30 @@ class RoomsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentUser.name),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: AppAvatarRadius.s,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              foregroundColor: theme.colorScheme.primary,
+              child: Text(
+                currentUser.name.isNotEmpty
+                    ? currentUser.name[0].toUpperCase()
+                    : '?',
+                style: const TextStyle(
+                  fontSize: AppFontSize.body,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.m),
+            Text(currentUser.name),
+          ],
+        ),
         actions: const [ThemeButton()],
       ),
       body: BlocBuilder<RoomsBloc, RoomsState>(
@@ -27,170 +48,49 @@ class RoomsPage extends StatelessWidget {
             RoomsInitial() || RoomsLoading() => const Center(
                 child: CircularProgressIndicator(),
               ),
-            RoomsLoaded(:final rooms) => rooms.isEmpty
-                ? _buildEmpty(context)
-                : ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: rooms.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final room = rooms[index];
-                      final companionId = room.userAId == currentUser.id
-                          ? room.userBId
-                          : room.userAId;
-
-                      return RoomListTile(
-                        companionId: companionId,
-                        lastMessageText: room.lastMessage?.text,
-                        onTap: () => context.go(
-                          '/rooms/${room.id}',
-                          extra: {
-                            'currentUser': currentUser,
-                            'roomId': room.id,
-                          },
-                        ),
-                      );
-                    },
+            RoomsLoaded(:final rooms, :final usersMap) => rooms.isEmpty
+                ? const EmptyState(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Нет диалогов',
+                    subtitle: 'Нажмите + чтобы начать новый чат',
+                  )
+                : RoomsList(
+                    rooms: rooms,
+                    usersMap: usersMap,
+                    currentUser: currentUser,
+                    formatTime: DateFormatter.formatTime,
                   ),
-            RoomsError(:final message) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(message, textAlign: TextAlign.center),
-                      const SizedBox(height: 24),
-                      FilledButton.icon(
-                        onPressed: () => context
-                            .read<RoomsBloc>()
-                            .add(RoomsLoadRequested(userId: currentUser.id)),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Повторить'),
-                      ),
-                    ],
-                  ),
-                ),
+            RoomsError(:final message) => ErrorState(
+                title: 'Не удалось загрузить',
+                message: message,
+                onRetry: () => context
+                    .read<RoomsBloc>()
+                    .add(RoomsLoadRequested(userId: currentUser.id)),
               ),
           };
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNewChatDialog(context),
-        child: const Icon(Icons.chat),
+        onPressed: () => _showNewChatSheet(context),
+        child: const Icon(Icons.edit_square),
       ),
     );
   }
 
-  Widget _buildEmpty(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Нет диалогов',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Начните новый чат',
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showNewChatDialog(BuildContext context) {
+  void _showNewChatSheet(BuildContext context) {
+    final roomsBloc = context.read<RoomsBloc>();
     showModalBottomSheet(
       context: context,
-      builder: (sheetContext) => BlocProvider(
-        create: (_) => UsersBloc(
-          repository: context.read<ChatRepository>(),
-        )..add(const UsersLoadRequested()),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Выберите собеседника',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-            Flexible(
-              child: BlocBuilder<UsersBloc, UsersState>(
-                builder: (blocContext, state) {
-                  return switch (state) {
-                    UsersInitial() || UsersLoading() => const SizedBox(
-                        height: 200,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    UsersLoaded(:final users) => ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: users.length,
-                        itemBuilder: (_, index) {
-                          final user = users[index];
-                          if (user.id == currentUser.id) {
-                            return const SizedBox.shrink();
-                          }
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              child: Text(
-                                user.name[0].toUpperCase(),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                            title: Text(user.name),
-                            onTap: () {
-                              Navigator.of(sheetContext).pop();
-                              context
-                                  .read<RoomsBloc>()
-                                  .add(RoomCreateRequested(
-                                    currentUserId: currentUser.id,
-                                    targetUserId: user.id,
-                                  ));
-                            },
-                          );
-                        },
-                      ),
-                    UsersError() => const SizedBox(
-                        height: 200,
-                        child: Center(child: Text('Ошибка загрузки')),
-                      ),
-                  };
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: roomsBloc),
+          BlocProvider(
+            create: (_) => UsersBloc(
+              repository: context.read<ChatRepository>(),
+            )..add(const UsersLoadRequested()),
+          ),
+        ],
+        child: NewChatSheet(currentUserId: currentUser.id),
       ),
     );
   }

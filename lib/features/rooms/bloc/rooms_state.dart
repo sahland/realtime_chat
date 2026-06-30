@@ -19,11 +19,15 @@ class RoomsLoading extends RoomsState {
 
 class RoomsLoaded extends RoomsState {
   final List<RoomModel> rooms;
+  final Map<String, UserModel> usersMap;
 
-  const RoomsLoaded({required this.rooms});
+  const RoomsLoaded({
+    required this.rooms,
+    required this.usersMap,
+  });
 
   @override
-  List<Object?> get props => [rooms];
+  List<Object?> get props => [rooms, usersMap];
 }
 
 class RoomsError extends RoomsState {
