@@ -49,6 +49,8 @@ lib/
 │   ├── users/      — выбор/создание пользователя (BLoC + view + widgets)
 │   ├── rooms/      — список диалогов (BLoC + view + widgets)
 │   └── chat/       — переписка с Optimistic UI (BLoC + view + widgets)
+├── theme/          — DI цепочка для смены темы (ThemeStorage → ThemeController → ThemeInherited)
+├── uikit/          — дизайн-система (цвета, константы отступов, переиспользуемые виджеты)
 └── router/         — GoRouter
 ```
 
@@ -57,3 +59,6 @@ lib/
 - **Repository как фасад** — BLoC не знает о Dio/Retrofit/WebSocket напрямую, работает только через `ChatRepository`
 - **Optimistic UI** — сообщение появляется в списке сразу после отправки со статусом `sending`, при получении `message.created` статус меняется на `sent` (сопоставление по `client_message_id`), при `error` — помечается ошибкой
 - **Дедупликация** — входящие сообщения проверяются и по `client_message_id` (свои), и по `message.id` (чужие), дубликаты после reconnect исключены
+- **Восстановление после reconnect** — при повторном получении `ready` от WS история перезагружается с сервера и мержится с оптимистичными сообщениями
+- **Смена темы** — InheritedWidget DI: `ThemeStorage` (SharedPreferences) → `ThemeRepository` → `ThemeController` (ValueNotifier) → `ThemeInherited` → `ThemeBuilder`
+- **UIKit** — `AppColorScheme` (ThemeExtension), токены отступов/радиусов/размеров, переиспользуемые виджеты (`EmptyState`, `ErrorState`, `BottomSheetHandle`)

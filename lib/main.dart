@@ -13,7 +13,13 @@ void main() async {
   await dotenv.load();
 
   final prefs = await SharedPreferences.getInstance();
-  final dio = Dio(BaseOptions(baseUrl: AppConfig.apiUrl));
+
+  final dio = Dio(BaseOptions(
+    baseUrl: AppConfig.apiUrl,
+    connectTimeout: AppConfig.connectTimeout,
+    receiveTimeout: AppConfig.receiveTimeout,
+    sendTimeout: AppConfig.sendTimeout,
+  ));
 
   final repository = ChatRepository(
     usersApi: UsersApiClient(dio),

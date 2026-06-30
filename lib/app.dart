@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import 'data/data.dart';
 import 'router/router.dart';
 import 'theme/theme.dart';
 import 'uikit/uikit.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   final ChatRepository repository;
   final ThemeController themeController;
 
@@ -17,20 +18,39 @@ class App extends StatelessWidget {
   });
 
   @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.router(widget.repository);
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ThemeInherited(
-      controller: themeController,
+      controller: widget.themeController,
       child: ThemeBuilder(
-        controller: themeController,
+        controller: widget.themeController,
         builder: (context, mode) => RepositoryProvider.value(
-          value: repository,
+          value: widget.repository,
           child: MaterialApp.router(
             title: 'Realtime Chat',
             debugShowCheckedModeBanner: false,
             theme: AppThemeData.lightTheme,
             darkTheme: AppThemeData.darkTheme,
             themeMode: mode,
-            routerConfig: AppRouter.router(repository),
+            routerConfig: _router,
           ),
         ),
       ),

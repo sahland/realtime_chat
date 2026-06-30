@@ -36,6 +36,8 @@ class AppRouter {
               final extra = state.extra! as Map<String, dynamic>;
               final currentUser = extra['currentUser'] as UserModel;
               final roomId = state.pathParameters['roomId']!;
+              final companionName =
+                  extra['companionName'] as String? ?? 'Чат';
 
               return BlocProvider(
                 create: (_) =>
@@ -47,6 +49,7 @@ class AppRouter {
                 child: ChatPage(
                   roomId: roomId,
                   currentUser: currentUser,
+                  companionName: companionName,
                 ),
               );
             },
