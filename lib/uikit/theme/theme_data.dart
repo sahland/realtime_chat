@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../colors/colors.dart';
+import '../constants/constants.dart';
 
 abstract class AppThemeData {
   static ThemeData get lightTheme => _buildTheme(
@@ -26,7 +27,7 @@ abstract class AppThemeData {
       secondary: colors.secondary,
       onSecondary: colors.onPrimary,
       error: colors.error,
-      onError: Colors.white,
+      onError: colors.onPrimary,
       surface: colors.surface,
       onSurface: colors.onSurface,
       onSurfaceVariant: colors.onSurfaceVariant,
@@ -50,7 +51,7 @@ abstract class AppThemeData {
         foregroundColor: colors.onSurface,
         titleTextStyle: TextStyle(
           color: colors.onSurface,
-          fontSize: 18,
+          fontSize: AppFontSize.headline,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -58,35 +59,38 @@ abstract class AppThemeData {
         elevation: 0,
         color: colors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.l),
           side: BorderSide(color: colors.outlineVariant),
         ),
         margin: EdgeInsets.zero,
       ),
       listTileTheme: ListTileThemeData(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.l,
+          vertical: AppSpacing.xs,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.l),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colors.surfaceContainerHighest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(24),
-          borderSide: BorderSide(color: colors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          borderSide: BorderSide(color: colors.primary, width: AppBorder.medium),
         ),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+          horizontal: AppSpacing.l,
+          vertical: AppSpacing.m,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -94,7 +98,7 @@ abstract class AppThemeData {
         foregroundColor: colors.onPrimary,
         elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.l),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -103,21 +107,26 @@ abstract class AppThemeData {
           foregroundColor: colors.onPrimary,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.m),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xxl,
+            vertical: AppSpacing.m,
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
         ),
         backgroundColor: colors.surface,
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colors.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
         ),
       ),
     );
