@@ -20,12 +20,12 @@ class _UsersApiClient implements UsersApiClient {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<List<UserModel>> getUsers() async {
+  Future<UsersListResponse> getUsers() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<List<UserModel>>(
+    final _options = _setStreamType<UsersListResponse>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -35,12 +35,10 @@ class _UsersApiClient implements UsersApiClient {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<List<dynamic>>(_options);
-    late List<UserModel> _value;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UsersListResponse _value;
     try {
-      _value = _result.data!
-          .map((dynamic i) => UserModel.fromJson(i as Map<String, dynamic>))
-          .toList();
+      _value = UsersListResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, response: _result);
       rethrow;

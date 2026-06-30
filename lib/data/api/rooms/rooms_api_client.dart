@@ -10,7 +10,7 @@ abstract class RoomsApiClient {
   factory RoomsApiClient(Dio dio, {String baseUrl}) = _RoomsApiClient;
 
   @GET('/api/rooms')
-  Future<List<RoomModel>> getRooms(@Query('user_id') String userId);
+  Future<RoomsListResponse> getRooms(@Query('user_id') String userId);
 
   @POST('/api/rooms/direct')
   Future<RoomModel> createDirectRoom(@Body() Map<String, dynamic> body);

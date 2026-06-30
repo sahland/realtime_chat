@@ -10,7 +10,7 @@ abstract class UsersApiClient {
   factory UsersApiClient(Dio dio, {String baseUrl}) = _UsersApiClient;
 
   @GET('/api/users')
-  Future<List<UserModel>> getUsers();
+  Future<UsersListResponse> getUsers();
 
   @POST('/api/users')
   Future<UserModel> createUser(@Body() Map<String, dynamic> body);

@@ -10,7 +10,7 @@ abstract class MessagesApiClient {
   factory MessagesApiClient(Dio dio, {String baseUrl}) = _MessagesApiClient;
 
   @GET('/api/rooms/{room_id}/messages')
-  Future<List<MessageModel>> getMessages(
+  Future<MessagesListResponse> getMessages(
     @Path('room_id') String roomId,
     @Query('user_id') String userId,
     @Query('limit') int limit,
