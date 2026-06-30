@@ -67,6 +67,10 @@ class ChatErrorReceived extends ChatEvent {
   List<Object?> get props => [error, clientMessageId];
 }
 
+class ChatReconnected extends ChatEvent {
+  const ChatReconnected();
+}
+
 class ChatStopped extends ChatEvent {
   const ChatStopped();
 }

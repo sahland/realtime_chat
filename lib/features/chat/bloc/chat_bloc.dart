@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../data/data.dart';
 import '../../../domain/domain.dart';
+import '../../../uikit/uikit.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
 
@@ -19,6 +20,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   String _roomId = '';
   String _userId = '';
   Timer? _typingTimer;
+  bool _initialReady = true;
 
   ChatBloc({
     required ChatRepository repository,
@@ -32,6 +34,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatMessageReceived>(_onMessageReceived);
     on<ChatTypingReceived>(_onTypingReceived);
     on<ChatErrorReceived>(_onErrorReceived);
+    on<ChatReconnected>(_onReconnected);
     on<ChatStopped>(_onStopped);
     on<ChatTypingExpired>(_onTypingExpired);
   }
@@ -42,6 +45,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   ) async {
     _roomId = event.roomId;
     _userId = event.userId;
+    _initialReady = true;
 
     emit(const ChatLoading());
 
@@ -72,7 +76,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   void _handleWsEvent(WsEvent event) {
     switch (event) {
       case WsReadyEvent():
-        break;
+        if (_initialReady) {
+          _initialReady = false;
+        } else {
+          add(const ChatReconnected());
+        }
       case WsMessageCreatedEvent():
         final message = MessageModel.fromJson(event.message);
         add(ChatMessageReceived(
@@ -89,6 +97,44 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           clientMessageId: event.clientMessageId,
         ));
     }
+  }
+
+  Future<void> _onReconnected(
+    ChatReconnected event,
+    Emitter<ChatState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! ChatReady) return;
+
+    try {
+      final serverMessages = await _repository.getMessages(
+        roomId: _roomId,
+        userId: _userId,
+      );
+
+      final serverIds = {for (final m in serverMessages) m.id};
+      final pending = currentState.messages
+          .where((m) => m.status == MessageStatus.sending)
+          .toList();
+
+      final merged = serverMessages
+          .map((m) => ChatMessage(
+                message: m,
+                text: m.text,
+                senderId: m.senderId,
+                status: MessageStatus.sent,
+              ))
+          .toList();
+
+      for (final p in pending) {
+        final confirmed = p.message != null && serverIds.contains(p.message!.id);
+        if (!confirmed) {
+          merged.add(p);
+        }
+      }
+
+      emit(currentState.copyWith(messages: merged));
+    } catch (_) {}
   }
 
   void _onMessageSent(
@@ -176,7 +222,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       typingUserId: event.userId,
     ));
 
-    _typingTimer = Timer(const Duration(seconds: 3), () {
+    _typingTimer = Timer(AppDuration.typingTimeout, () {
       final s = state;
       if (s is ChatReady) {
         add(const ChatTypingExpired());
